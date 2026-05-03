@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { client } from "../client";
 import { prepareContractCall, sendTransaction } from "thirdweb";
 import { useActiveAccount, useSendTransaction, ConnectButton } from "thirdweb/react";
-import { verifyNFTContract } from "../../contract";
+import { verifyNFTContract } from "../contract";
 
 const GridCanvas = () => {
   const ref = useRef<HTMLCanvasElement>(null);
