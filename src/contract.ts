@@ -1,11 +1,7 @@
-import { getContract } from "thirdweb";
-import { sepolia } from "thirdweb/chains";
-import { client } from "./app/client";
+import { createThirdwebClient } from "thirdweb";
 
-export const CONTRACT_ADDRESS = "0x31c5B73bf8c813570A34DB2f531cd663fA1B7EaD";
+const clientId = process.env.NEXT_PUBLIC_TEMPLATE_CLIENT_ID || "placeholder";
 
-export const verifyNFTContract = getContract({
-  client,
-  chain: sepolia,
-  address: CONTRACT_ADDRESS,
+export const client = createThirdwebClient({
+  clientId: clientId,
 });
