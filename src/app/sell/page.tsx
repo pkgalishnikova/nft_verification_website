@@ -1,7 +1,5 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { ConnectButton, useActiveAccount } from "thirdweb/react";
-import { client } from "../client";
 
 const GridCanvas = () => {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -98,12 +96,12 @@ const ResultCard = ({ result, onReset }: { result: VerifyResult; onReset: () => 
   const getConfidence = (acc: number) => {
     if (acc >= 90) return {
       emoji: "✅", title: "Ownership Verified",
-      subtitle: "Watermark strongly matches your wallet address",
+      subtitle: "Watermark strongly matches the provided wallet address",
       color: "#00ffc8", bg: "rgba(0,255,200,0.06)", border: "rgba(0,255,200,0.3)",
     };
     if (acc >= 70) return {
       emoji: "🔍", title: "Likely Your NFT",
-      subtitle: "Partial watermark match — you are probably the original owner",
+      subtitle: "Partial watermark match - this is probably the original owner's NFT",
       color: "#60a5fa", bg: "rgba(96,165,250,0.06)", border: "rgba(96,165,250,0.3)",
     };
     if (acc >= 50) return {
@@ -169,8 +167,8 @@ const ResultCard = ({ result, onReset }: { result: VerifyResult; onReset: () => 
 };
 
 export default function VerifyPage() {
-  const account = useActiveAccount();
-  const wallet = account?.address ?? null;
+  const [wallet, setWallet] = useState<string>("");
+  const [walletError, setWalletError] = useState<string | null>(null);
 
   const [mounted, setMounted] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -182,7 +180,7 @@ export default function VerifyPage() {
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    if (!wallet) { setStep(1); return; }
+    if (!wallet || wallet.length < 10) { setStep(1); return; }
     if (!file) { setStep(2); return; }
     setStep(3);
   }, [wallet, file]);
@@ -271,12 +269,12 @@ export default function VerifyPage() {
               Extract & Verify
             </h1>
             <p className="text-white/40 text-sm leading-relaxed">
-              Connect your wallet, upload a watermarked NFT, and we'll extract the hidden signature to confirm you're the rightful owner.
+              Paste a wallet address, upload a watermarked NFT, and we'll extract the hidden signature to confirm whether that address is the rightful owner.
             </p>
           </div>
 
           <div className="fade-up flex items-center mb-8" style={{ animationDelay: "0.1s", opacity: 0 }}>
-            <Step n={1} label="Connect Wallet" active={step === 1} done={step > 1} />
+            <Step n={1} label="Wallet Address" active={step === 1} done={step > 1} />
             <Divider />
             <Step n={2} label="Upload NFT" active={step === 2} done={step > 2} />
             <Divider />
@@ -289,25 +287,22 @@ export default function VerifyPage() {
               <label className="font-mono text-xs text-white/40 uppercase tracking-widest block mb-3">
                 01 · Wallet Address
               </label>
-              {wallet ? (
-                <div className="flex items-center justify-between px-4 py-3 rounded-xl"
-                  style={{ background: "rgba(0,255,200,0.06)", border: "1px solid rgba(0,255,200,0.2)" }}>
-                  <div>
-                    <div className="font-mono text-xs text-cyan-400/60 mb-0.5">Connected</div>
-                    <div className="font-mono text-sm text-cyan-300">
-                      {wallet.slice(0, 6)}…{wallet.slice(-4)}
-                    </div>
-                  </div>
-                  <ConnectButton client={client} />
-                </div>
-              ) : (
-                <ConnectButton
-                  client={client}
-                  connectButton={{
-                    label: "Connect Wallet",
-                    className: "btn-cyan w-full py-3.5 rounded-xl font-mono text-sm tracking-wide !w-full",
-                  }}
-                />
+              <input
+                type="text"
+                placeholder="0x..."
+                value={wallet}
+                onChange={(e) => {
+                  setWallet(e.target.value);
+                  setWalletError(null);
+                }}
+                className="w-full px-4 py-3 rounded-xl font-mono text-sm text-cyan-300 outline-none transition-all"
+                style={{
+                  background: "rgba(0,255,200,0.06)",
+                  border: `1px solid ${walletError ? "rgba(248,113,113,0.5)" : "rgba(0,255,200,0.2)"}`,
+                }}
+              />
+              {walletError && (
+                <p className="font-mono text-xs mt-1" style={{ color: "#f87171" }}>{walletError}</p>
               )}
             </div>
 
@@ -340,7 +335,7 @@ export default function VerifyPage() {
                       style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
                       <div>① Watermark extracted from image via decoder</div>
                       <div>② Extracted bits converted back to address</div>
-                      <div>③ Compared against your connected wallet address</div>
+                      <div>③ Compared against the provided wallet address</div>
                     </div>
                   )}
 
